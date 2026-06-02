@@ -7,6 +7,7 @@ const authRoutes = require("./routes/authRoutes");
 const userProfileRoutes = require("./routes/userProfileRoutes");
 const studySessionRoutes = require("./routes/studySessionRoutes");
 const questionRoutes = require("./routes/questionRoutes");
+const quizAttemptRoutes = require("./routes/quizAttemptRoutes");
 
 
 app.use(cors());
@@ -16,6 +17,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/profile", userProfileRoutes);
 app.use("/api/sessions", studySessionRoutes);
 app.use("/api/questions", questionRoutes);
+app.use("/api/quiz", quizAttemptRoutes); 
+
 
 //database connection
 connectDB();
