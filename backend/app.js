@@ -6,6 +6,7 @@ const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const userProfileRoutes = require("./routes/userProfileRoutes");
 const studySessionRoutes = require("./routes/studySessionRoutes");
+const questionRoutes = require("./routes/questionRoutes");
 
 
 app.use(cors());
@@ -14,6 +15,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/profile", userProfileRoutes);
 app.use("/api/sessions", studySessionRoutes);
+app.use("/api/questions", questionRoutes);
 
 //database connection
 connectDB();
