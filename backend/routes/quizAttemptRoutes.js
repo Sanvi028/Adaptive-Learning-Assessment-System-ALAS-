@@ -9,8 +9,10 @@ const QuizAttempt = require("../models/QuizAttempt");
 router.post("/submit", async (req, res) => {
   try {
     const { userId, answers } = req.body;
+
     let score = 0;
     let topicsCovered = new Set();
+
     // answers = [{ questionId, selectedAnswer }]
 
     for (let ans of answers) {
@@ -19,8 +21,10 @@ router.post("/submit", async (req, res) => {
       if (!question) continue;
 
       const topic = question.topic;
-      topicsCovered.add(topic); 
-      const isCorrect = question.correctAnswer === ans.selectedAnswer;
+      topicsCovered.add(topic);
+
+      const isCorrect =
+        question.correctAnswer === ans.selectedAnswer;
 
       let performance = await UserPerformance.findOne({
         userId,
@@ -39,12 +43,12 @@ router.post("/submit", async (req, res) => {
 
       performance.totalAttempted += 1;
 
-            if (isCorrect) {
-            score++;
-            performance.correct += 1;
-        } else {
-            performance.incorrect += 1;
-        }
+      if (isCorrect) {
+        score++;
+        performance.correct += 1;
+      } else {
+        performance.incorrect += 1;
+      }
 
       performance.accuracy =
         (performance.correct / performance.totalAttempted) * 100;
@@ -54,9 +58,33 @@ router.post("/submit", async (req, res) => {
       await performance.save();
     }
 
+    // Quiz summary
+    const totalQuestions = answers.length;
+
+    const accuracy =
+      totalQuestions > 0
+        ? (score / totalQuestions) * 100
+        : 0;
+
+    // Save quiz attempt history
+    const quizAttempt = new QuizAttempt({
+      userId,
+      score,
+      totalQuestions,
+      accuracy,
+      topicsCovered: [...topicsCovered],
+    });
+
+    await quizAttempt.save();
+
     res.json({
       success: true,
-      message: "Quiz attempt recorded and performance updated",
+      message: "Quiz submitted successfully",
+      data: {
+        score,
+        totalQuestions,
+        accuracy,
+      },
     });
   } catch (error) {
     res.status(500).json({
