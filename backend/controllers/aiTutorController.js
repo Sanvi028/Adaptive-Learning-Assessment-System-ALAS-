@@ -1,4 +1,6 @@
 const UserPerformance = require("../models/UserPerformance");
+const GeneratedQuestion = require("../models/GeneratedQuestion");
+const { generateAIQuestions } = require("../services/aiServices");
 
 exports.generateQuestions = async (req, res) => {
   try {
@@ -8,14 +10,12 @@ exports.generateQuestions = async (req, res) => {
       return res.status(400).json({ message: "UserId required" });
     }
 
-    // 1. Get user performance
     const performance = await UserPerformance.find({ userId });
 
     if (!performance.length) {
       return res.status(404).json({ message: "No performance data found" });
     }
 
-    // 2. Extract weak topics (simple logic for now)
     const weakTopics = performance
       .filter(p => p.accuracy < 50)
       .map(p => p.topic);
@@ -26,42 +26,26 @@ exports.generateQuestions = async (req, res) => {
       });
     }
 
-    // 3. Pick top weak topic
     const topic = weakTopics[0];
 
-    // 4. Generate mock AI questions based on topic
-    const generatedQuestions = [
-      {
+    const generatedQuestions = await generateAIQuestions(topic);
+
+    const savedQuestions = await GeneratedQuestion.insertMany(
+      generatedQuestions.map(q => ({
+        userId,
         topic,
-        difficulty: "easy",
-        questionText: `Basic question on ${topic}?`,
-        options: [
-          "Option A",
-          "Option B",
-          "Option C",
-          "Option D"
-        ],
-        correctAnswer: "Option A",
-        explanation: `This is a basic explanation for ${topic}`
-      },
-      {
-        topic,
-        difficulty: "medium",
-        questionText: `Intermediate question on ${topic}?`,
-        options: [
-          "Option A",
-          "Option B",
-          "Option C",
-          "Option D"
-        ],
-        correctAnswer: "Option B",
-        explanation: `This is a medium explanation for ${topic}`
-      }
-    ];
+        difficulty: q.difficulty || "easy",
+        questionText: q.questionText,
+        options: q.options,
+        correctAnswer: q.correctAnswer,
+        explanation: q.explanation
+      }))
+    );
 
     return res.status(200).json({
       topicSelected: topic,
-      questions: generatedQuestions
+      count: savedQuestions.length,
+      questions: savedQuestions
     });
 
   } catch (error) {
@@ -69,4 +53,5 @@ exports.generateQuestions = async (req, res) => {
       message: error.message
     });
   }
-};
+}; 
+
