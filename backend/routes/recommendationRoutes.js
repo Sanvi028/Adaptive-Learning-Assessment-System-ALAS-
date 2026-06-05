@@ -3,32 +3,40 @@ const router = express.Router();
 
 const UserPerformance = require("../models/UserPerformance");
 const Question = require("../models/Questions");
+const authMiddleware = require("../middleware/authMiddleware");
 
-router.get("/:userId", async (req, res) => {
+router.get("/", authMiddleware, async (req, res) => {
   try {
-    const { userId } = req.params;
+    if (!req.user || !req.user.userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized user"
+      });
+    }
+
+    const userId = req.user.userId;
 
     const performance = await UserPerformance.find({ userId });
 
     // STEP 1: compute weakness score per topic
     const scored = performance.map((p) => {
-      const total = p.totalAttempted || 0;
-      const correct = p.correct || 0;
-      const incorrect = p.incorrect || 0;
+      const total = p.totalQuestions || 0;
+      const correct = p.correctAnswers || 0;
+      const incorrect = p.wrongAnswers || 0;
 
       const accuracy = total === 0 ? 0 : (correct / total) * 100;
 
       // 🔥 PERSONALIZED WEAKNESS MODEL
       const weaknessScore =
-        (incorrect * 2) +              // repeated mistakes
-        (accuracy < 50 ? 5 : 0) +      // very weak topic penalty
-        (accuracy < 70 ? 2 : 0);       // medium weak penalty
+        (incorrect * 2) +
+        (accuracy < 50 ? 5 : 0) +
+        (accuracy < 70 ? 2 : 0);
 
       return {
         topic: p.topic,
         accuracy,
         weaknessScore,
-        totalAttempted: total,
+        totalQuestions: total,
       };
     });
 
@@ -46,15 +54,14 @@ router.get("/:userId", async (req, res) => {
       topic: { $in: topicNames },
     }).limit(10);
 
-    // FINAL RESPONSE
-    res.json({
+    return res.json({
       success: true,
       weakTopics: topWeakTopics,
       recommendedQuestions: questions,
     });
 
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: error.message,
     });

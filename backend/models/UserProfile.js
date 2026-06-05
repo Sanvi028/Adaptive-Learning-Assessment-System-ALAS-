@@ -33,6 +33,11 @@ const UserProfileSchema = new mongoose.Schema(
       enum: ["beginner", "intermediate", "advanced"],
       default: "beginner",
     },
+
+    language: {
+    type: String,
+    default: "en"
+    },
   },
   {
     timestamps: true,

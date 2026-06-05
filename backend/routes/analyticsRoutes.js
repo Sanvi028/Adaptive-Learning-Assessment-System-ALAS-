@@ -2,29 +2,37 @@ const express = require("express");
 const router = express.Router();
 
 const UserPerformance = require("../models/UserPerformance");
+const authMiddleware = require("../middleware/authMiddleware");
 
-// GET WEAK TOPICS
-router.get("/weak/:userId", async (req, res) => {
+// GET WEAK TOPICS (AUTHENTICATED USER ONLY)
+router.get("/weak", authMiddleware, async (req, res) => {
   try {
-    const { userId } = req.params;
+    if (!req.user || !req.user.userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized user"
+      });
+    }
+
+    const userId = req.user.userId;
 
     const weakTopics = await UserPerformance.find({
       userId,
-      accuracy: { $lt: 60 },
+      accuracy: { $lt: 60 }
     });
 
-    res.json({
+    return res.json({
       success: true,
       count: weakTopics.length,
-      data: weakTopics,
+      data: weakTopics
     });
+
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: error.message,
+      message: error.message
     });
   }
 });
 
 module.exports = router;
-

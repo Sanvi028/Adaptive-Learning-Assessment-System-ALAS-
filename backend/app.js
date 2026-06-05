@@ -26,10 +26,6 @@ app.use("/api/recommendations",recommendationRoutes);
 app.use("/api/ai",aiTutorRoutes);
 
 
-
-
-
-
 //database connection
 connectDB();
 

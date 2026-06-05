@@ -5,29 +5,19 @@ const quizAttemptSchema = new mongoose.Schema(
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true,
-      index: true,
+      required: true
     },
 
-    score: {
-      type: Number,
-      required: true,
+    questionId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Question",
+      required: true
     },
 
-    totalQuestions: {
-      type: Number,
-      required: true,
-    },
-
-    accuracy: {
-      type: Number,
-      required: true,
-    },
-
-    topicsCovered: {
-      type: [String],
-      default: [],
-    },
+    userAnswer: String,
+    correctAnswer: String,
+    isCorrect: Boolean,
+    topic: String
   },
   { timestamps: true }
 );

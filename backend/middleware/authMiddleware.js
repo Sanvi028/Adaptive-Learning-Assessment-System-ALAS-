@@ -2,31 +2,42 @@ const jwt = require("jsonwebtoken");
 
 const authMiddleware = (req, res, next) => {
   try {
-    // 1. Get token from header
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return res.status(401).json({
-        message: "No token provided",
+        success: false,
+        message: "No token provided"
       });
     }
 
-    // 2. Extract token
-    const token = authHeader.split(" ")[1];
+    const token = authHeader.split(" ")[1].trim(); // ✅ FIX 1
 
-    // 3. Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // 4. Attach user to request
-    req.user = decoded;
+    // ✅ SAFETY CHECK (FIX 2)
+    if (!decoded || !decoded.userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid token payload"
+      });
+    }
 
-    // 5. Continue to next function
+    // STANDARD USER OBJECT
+    req.user = {
+      userId: decoded.userId
+    };
+
+    // DEBUG (temporary but useful for your current issue)
+    console.log("AUTH SUCCESS USER:", req.user); // ✅ FIX 3
+
     next();
 
   } catch (error) {
     return res.status(401).json({
+      success: false,
       message: "Invalid token",
-      error: error.message,
+      error: error.message
     });
   }
 };

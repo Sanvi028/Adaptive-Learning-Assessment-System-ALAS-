@@ -14,24 +14,24 @@ const userPerformanceSchema = new mongoose.Schema(
       index: true,
     },
 
-    totalAttempted: {
+    totalQuestions: {
       type: Number,
       default: 0,
     },
 
-    correct: {
+    correctAnswers: {
       type: Number,
       default: 0,
     },
 
-    incorrect: {
+    wrongAnswers: {
       type: Number,
       default: 0,
     },
 
     accuracy: {
       type: Number,
-      default: 0, // calculated field
+      default: 0,
     },
 
     lastAttemptedAt: {
@@ -42,7 +42,24 @@ const userPerformanceSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Ensure one record per user per topic
+// ensure 1 record per user per topic
 userPerformanceSchema.index({ userId: 1, topic: 1 }, { unique: true });
+
+/**
+ * ✅ AUTO-FIX ACCURACY BEFORE SAVE
+ * prevents NaN forever
+ */
+userPerformanceSchema.pre("save", function (next) {
+  const total = this.totalQuestions;
+
+  if (!total || total === 0) {
+    this.accuracy = 0;
+  } else {
+    this.accuracy =
+      (this.correctAnswers / total) * 100;
+  }
+
+  next();
+});
 
 module.exports = mongoose.model("UserPerformance", userPerformanceSchema);

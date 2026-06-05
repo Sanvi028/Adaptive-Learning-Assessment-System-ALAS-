@@ -1,10 +1,9 @@
 const express = require("express");
 const router = express.Router();
 
-const { registerUser,loginUser} = require("../controllers/authController");
+const { submitQuiz } = require("../controllers/quizAttemptController");
+const authMiddleware = require("../middleware/authMiddleware");
 
-// POST /api/auth/register
-router.post("/login", loginUser);
-router.post("/register", registerUser);
+router.post("/submit", authMiddleware, submitQuiz);
 
 module.exports = router;
