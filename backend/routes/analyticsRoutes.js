@@ -3,6 +3,9 @@ const router = express.Router();
 
 const UserPerformance = require("../models/UserPerformance");
 const authMiddleware = require("../middleware/authMiddleware");
+const {
+  getSummary
+} = require("../controllers/analyticsController");
 
 // GET WEAK TOPICS (AUTHENTICATED USER ONLY)
 router.get("/weak", authMiddleware, async (req, res) => {
@@ -35,4 +38,11 @@ router.get("/weak", authMiddleware, async (req, res) => {
   }
 });
 
+router.get(
+  "/summary",
+  authMiddleware,
+  getSummary
+);
+
 module.exports = router;
+

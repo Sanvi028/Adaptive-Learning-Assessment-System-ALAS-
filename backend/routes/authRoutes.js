@@ -1,9 +1,15 @@
 const express = require("express");
 const router = express.Router();
 
-const { submitQuiz } = require("../controllers/quizAttemptController");
-const authMiddleware = require("../middleware/authMiddleware");
+const {
+  register,
+  login
+} = require("../controllers/authController");
 
-router.post("/submit", authMiddleware, submitQuiz);
+// REGISTER USER
+router.post("/register", register);
+
+// LOGIN USER
+router.post("/login", login);
 
 module.exports = router;

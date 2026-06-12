@@ -2,10 +2,20 @@ const StudySession = require("../models/StudySession");
 
 const createSession = async (req, res) => {
   try {
+    // ✅ Use project standard
+    const userId = req.user?.userId;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized user",
+      });
+    }
+
     const { type, topic, duration, accuracy, notes } = req.body;
 
     const session = await StudySession.create({
-      userId: req.user.id,
+      userId,
       type,
       topic,
       duration,
@@ -13,9 +23,14 @@ const createSession = async (req, res) => {
       notes,
     });
 
-    res.status(201).json(session);
+    return res.status(201).json({
+      success: true,
+      message: "Study session created successfully",
+      data: session,
+    });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
+      success: false,
       message: error.message,
     });
   }
