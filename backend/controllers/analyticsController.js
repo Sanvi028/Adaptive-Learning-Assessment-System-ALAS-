@@ -1,43 +1,62 @@
 const QuizAttempt = require("../models/QuizAttempt");
 
-exports.getSummary = async (req, res) => {
+exports.getTrends = async (req, res) => {
   try {
     const userId = req.user.userId;
 
     const attempts = await QuizAttempt.find({ userId });
 
-    const totalQuestions = attempts.length;
+    // Step 1: group data by date
+    const dailyMap = {};
 
-    const correctAnswers = attempts.filter(
-      (attempt) => attempt.isCorrect
-    ).length;
+    attempts.forEach((attempt) => {
+      const date = attempt.createdAt.toISOString().split("T")[0];
 
-    const wrongAnswers = totalQuestions - correctAnswers;
+      if (!dailyMap[date]) {
+        dailyMap[date] = { total: 0, correct: 0 };
+      }
 
-    const accuracy =
-      totalQuestions > 0
-        ? (correctAnswers / totalQuestions) * 100
-        : 0;
+      dailyMap[date].total += 1;
 
-    const topicsPracticed = [
-      ...new Set(attempts.map((attempt) => attempt.topic))
-    ];
+      if (attempt.isCorrect) {
+        dailyMap[date].correct += 1;
+      }
+    });
 
+    // Step 2: convert object → arrays
+    const dailyAttempts = [];
+    const dailyAccuracy = [];
+
+    Object.keys(dailyMap).forEach((date) => {
+      const data = dailyMap[date];
+
+      dailyAttempts.push({
+        date,
+        count: data.total,
+      });
+
+      dailyAccuracy.push({
+        date,
+        accuracy:
+          data.total > 0
+            ? (data.correct / data.total) * 100
+            : 0,
+      });
+    });
+
+    // Step 3: send response
     return res.json({
       success: true,
       data: {
-        totalQuestions,
-        correctAnswers,
-        wrongAnswers,
-        accuracy,
-        topicsPracticed
-      }
+        dailyAttempts,
+        dailyAccuracy,
+      },
     });
 
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: error.message
+      message: error.message,
     });
   }
 };
