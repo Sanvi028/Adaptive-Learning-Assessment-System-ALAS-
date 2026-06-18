@@ -25,6 +25,15 @@ app.use("/api/analytics", analyticsRoutes);
 app.use("/api/ai-tutor", aiTutorRoutes);
 app.use("/api/recommendations",recommendationRoutes);
 
+// console.log("authRoutes =", authRoutes);
+// console.log("userProfileRoutes =", userProfileRoutes);
+// console.log("studySessionRoutes =", studySessionRoutes);
+// console.log("questionRoutes =", questionRoutes);
+// console.log("quizAttemptRoutes =", quizAttemptRoutes);
+// console.log("analyticsRoutes =", analyticsRoutes);
+// console.log("aiTutorRoutes =", aiTutorRoutes);
+// console.log("recommendationRoutes =", recommendationRoutes);
+
 
 
 //database connection

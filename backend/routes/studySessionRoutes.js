@@ -1,21 +1,10 @@
-const {
-  generateRecommendations,
-} = require("../services/recommendationService");
+const express = require("express");
+const router = express.Router();
 
-exports.getRecommendations = async (req, res) => {
-  try {
-    const userId = req.user.userId;
+const authMiddleware = require("../middleware/authMiddleware");
+const { createSession } = require("../controllers/studySessionController");
 
-    const data = await generateRecommendations(userId);
+// CREATE STUDY SESSION
+router.post("/", authMiddleware, createSession);
 
-    res.json({
-      success: true,
-      data,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
+module.exports = router;
