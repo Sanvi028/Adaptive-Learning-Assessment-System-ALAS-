@@ -38,4 +38,23 @@ router.post("/", async (req, res) => {
   }
 });
 
+
+// ✅ ADD THIS: GET ALL QUESTIONS
+router.get("/", async (req, res) => {
+  try {
+    const questions = await Question.find();
+
+    res.status(200).json({
+      success: true,
+      count: questions.length,
+      questions,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+});
+
 module.exports = router;

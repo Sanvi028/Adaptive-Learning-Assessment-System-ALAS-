@@ -22,8 +22,9 @@ app.use("/api/sessions", studySessionRoutes);
 app.use("/api/questions", questionRoutes);
 app.use("/api/quiz", quizAttemptRoutes);
 app.use("/api/analytics", analyticsRoutes); 
+app.use("/api/ai-tutor", aiTutorRoutes);
 app.use("/api/recommendations",recommendationRoutes);
-app.use("/api/ai",aiTutorRoutes);
+
 
 
 //database connection

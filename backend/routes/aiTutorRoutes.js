@@ -1,10 +1,14 @@
 const express = require("express");
 const router = express.Router();
 
-const {
-  generateQuestions,
-} = require("../controllers/aiTutorController");
+const authMiddleware = require("../middleware/authMiddleware");
+const { aiTutorController } = require("../controllers/aiTutorController");
 
-router.get("/generate", generateQuestions);
+/**
+ * AI Tutor Route
+ * POST /api/ai-tutor
+ * Protected route (JWT required)
+ */
+router.post("/", authMiddleware, aiTutorController);
 
 module.exports = router;

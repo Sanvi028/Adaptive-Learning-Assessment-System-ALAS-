@@ -1,57 +1,34 @@
-const UserPerformance = require("../models/UserPerformance");
-const GeneratedQuestion = require("../models/GeneratedQuestion");
-const { generateAIQuestions } = require("../services/aiServices");
+const {
+  generateTutorResponse,
+} = require("../services/aiServices");
 
-exports.generateQuestions = async (req, res) => {
+/**
+ * AI Tutor Controller
+ * Only handles HTTP layer (NO business logic here)
+ */
+exports.aiTutorController = async (req, res) => {
   try {
-    const userId = req.user?.id || req.query.userId;
+    const userId = req.user.userId; // from auth middleware
+    const { question } = req.body;
 
-    if (!userId) {
-      return res.status(400).json({ message: "UserId required" });
-    }
-
-    const performance = await UserPerformance.find({ userId });
-
-    if (!performance.length) {
-      return res.status(404).json({ message: "No performance data found" });
-    }
-
-    const weakTopics = performance
-      .filter(p => p.accuracy < 50)
-      .map(p => p.topic);
-
-    if (!weakTopics.length) {
-      return res.json({
-        message: "No weak topics found. User is performing well."
+    // validation
+    if (!question) {
+      return res.status(400).json({
+        message: "Question is required",
       });
     }
 
-    const topic = weakTopics[0];
+    // call AI service (brain layer)
+    const result = await generateTutorResponse(userId, question);
 
-    const generatedQuestions = await generateAIQuestions(topic);
-
-    const savedQuestions = await GeneratedQuestion.insertMany(
-      generatedQuestions.map(q => ({
-        userId,
-        topic,
-        difficulty: q.difficulty || "easy",
-        questionText: q.questionText,
-        options: q.options,
-        correctAnswer: q.correctAnswer,
-        explanation: q.explanation
-      }))
-    );
-
-    return res.status(200).json({
-      topicSelected: topic,
-      count: savedQuestions.length,
-      questions: savedQuestions
-    });
+    return res.status(200).json(result);
 
   } catch (error) {
+    console.error("AI Tutor Controller Error:", error.message);
+
     return res.status(500).json({
-      message: error.message
+      message: "Internal Server Error in AI Tutor",
     });
   }
-}; 
+};
 
