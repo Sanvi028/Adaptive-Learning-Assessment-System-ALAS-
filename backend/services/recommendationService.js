@@ -1,119 +1,81 @@
-const UserPerformance = require("../models/UserPerformance");
 const Question = require("../models/Questions");
+const UserPerformance = require("../models/UserPerformance");
 
-/* -----------------------------
-   1. GET WEAK TOPICS
-------------------------------*/
-const getWeakTopics = (performanceData) => {
+/**
+ * 1. Get user weak/strong topics
+ */
+const getUserProfile = async (userId) => {
+  const data = await UserPerformance.find({ userId });
+
   const weakTopics = [];
-
-  performanceData.forEach((item) => {
-    const accuracy =
-      item.totalQuestions > 0
-        ? (item.correctAnswers / item.totalQuestions) * 100
-        : 0;
-
-    if (accuracy < 60) {
-      weakTopics.push({
-        topic: item.topic,
-        accuracy: Number(accuracy.toFixed(2)),
-      });
-    }
-  });
-
-  return weakTopics;
-};
-
-/* -----------------------------
-   2. GET STRONG TOPICS
-------------------------------*/
-const getStrongTopics = (performanceData) => {
   const strongTopics = [];
 
-  performanceData.forEach((item) => {
-    const accuracy =
-      item.totalQuestions > 0
-        ? (item.correctAnswers / item.totalQuestions) * 100
-        : 0;
+  data.forEach((item) => {
+    const accuracy = item.accuracy || 0;
 
-    if (accuracy >= 60) {
-      strongTopics.push({
-        topic: item.topic,
-        accuracy: Number(accuracy.toFixed(2)),
-      });
+    if (accuracy < 60) {
+      weakTopics.push(item.topic);
+    } else if (accuracy >= 85) {
+      strongTopics.push(item.topic);
     }
   });
 
-  return strongTopics;
+  return { weakTopics, strongTopics };
 };
 
-/* -----------------------------
-   3. SELECT DIFFICULTY
-------------------------------*/
-const getRecommendedDifficulty = (accuracy) => {
-  if (accuracy < 40) return "easy";
-  if (accuracy < 70) return "medium";
-  return "hard";
+/**
+ * 2. Fetch questions based on difficulty
+ */
+const getQuestionsByTopics = async (topics, difficulty, limit = 5) => {
+  return await Question.find({
+    topic: { $in: topics },
+    difficulty,
+  }).limit(limit);
 };
 
-/* -----------------------------
-   4. GET NEXT QUESTIONS
-------------------------------*/
-const getNextQuestions = async (weakTopics) => {
-  const recommendations = [];
-
-  for (const topicObj of weakTopics) {
-    const difficulty = getRecommendedDifficulty(topicObj.accuracy);
-
-    const questions = await Question.find({
-      topic: topicObj.topic,
-      difficulty,
-    }).limit(5);
-
-    recommendations.push({
-      topic: topicObj.topic,
-      difficulty,
-      questions,
-    });
-  }
-
-  return recommendations;
-};
-
-/* -----------------------------
-   5. MAIN FUNCTION
-------------------------------*/
+/**
+ * 3. MAIN RECOMMENDATION ENGINE
+ */
 const generateRecommendations = async (userId) => {
-  try {
-    const performanceData = await UserPerformance.find({ userId });
+  const { weakTopics, strongTopics } = await getUserProfile(userId);
 
-    if (!performanceData || performanceData.length === 0) {
-      return {
-        message: "No data available. Take a quiz first.",
-        weakTopics: [],
-        recommendations: [],
-      };
-    }
+  // Weak → EASY questions
+  const weakEasyQuestions = await getQuestionsByTopics(
+    weakTopics,
+    "easy",
+    5
+  );
 
-    const weakTopics = getWeakTopics(performanceData);
-    const strongTopics = getStrongTopics(performanceData);
+  // Weak → MEDIUM reinforcement
+  const weakMediumQuestions = await getQuestionsByTopics(
+    weakTopics,
+    "medium",
+    5
+  );
 
-    const recommendations = await getNextQuestions(weakTopics);
+  // Strong → HARD challenge
+  const strongHardQuestions = await getQuestionsByTopics(
+    strongTopics,
+    "hard",
+    5
+  );
 
-    return {
-      weakTopics,
-      strongTopics,
-      recommendations,
-    };
-  } catch (error) {
-    console.error("Recommendation Error:", error.message);
+  return {
+    weakTopics,
+    strongTopics,
 
-    return {
-      message: "Failed to generate recommendations",
-      weakTopics: [],
-      recommendations: [],
-    };
-  }
+    recommendations: {
+      reinforce: weakEasyQuestions,
+      practice: weakMediumQuestions,
+      challenge: strongHardQuestions,
+    },
+
+    roadmap: [
+      "Start with weak topics (easy questions)",
+      "Move to medium difficulty practice",
+      "Attempt hard questions for strong topics",
+    ],
+  };
 };
 
 module.exports = {
