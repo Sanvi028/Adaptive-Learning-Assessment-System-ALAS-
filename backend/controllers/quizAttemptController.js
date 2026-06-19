@@ -1,56 +1,54 @@
 const QuizAttempt = require("../models/QuizAttempt");
 const UserPerformance = require("../models/UserPerformance");
-const Question = require("../models/Questions");
 
 exports.submitQuiz = async (req, res) => {
   try {
     const userId = req.user?.userId;
 
     if (!userId) {
-      return res.status(401).json({
-        success: false,
-        message: "Unauthorized user",
-      });
+      return res.status(401).json({ success: false, message: "Unauthorized" });
     }
 
     const { answers } = req.body;
 
-    if (!Array.isArray(answers) || answers.length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: "answers required",
-      });
-    }
-
     let score = 0;
+
+    const subTopicMap = new Map();
     const topicsSet = new Set();
 
     for (const ans of answers) {
-      const question = await Question.findById(ans.questionId);
+      const isCorrect = ans.selectedAnswer === ans.correctAnswer;
 
-      if (!question) continue;
-const selected =
-  ans.selectedAnswer || ans.selectedOption || "";
-
-const isCorrect =
-  question.correctAnswer?.trim() === selected?.trim();
       if (isCorrect) score++;
 
-      topicsSet.add(question.topic || "general");
+      const subTopic = ans.subTopic || "general";
+      const topic = ans.topic || "general";
 
-      // store attempt log
+      topicsSet.add(topic);
+
+      // track subtopic performance
+      if (!subTopicMap.has(subTopic)) {
+        subTopicMap.set(subTopic, { correct: 0, total: 0 });
+      }
+
+      const data = subTopicMap.get(subTopic);
+      data.total += 1;
+      if (isCorrect) data.correct += 1;
+
+      // save attempt
       await QuizAttempt.create({
         userId,
-        questionId: question._id,
+        questionId: ans.questionId,
         userAnswer: ans.selectedAnswer,
-        correctAnswer: question.correctAnswer,
+        correctAnswer: ans.correctAnswer,
         isCorrect,
-        topic: question.topic,
+        topic,
+        subTopic,
       });
 
-      // update aggregated performance
+      // update topic-level performance
       await UserPerformance.findOneAndUpdate(
-        { userId, topic: question.topic },
+        { userId, topic },
         {
           $inc: {
             totalQuestions: 1,
@@ -66,23 +64,31 @@ const isCorrect =
     }
 
     const totalQuestions = answers.length;
-    const accuracy =
-      totalQuestions > 0 ? (score / totalQuestions) * 100 : 0;
+    const accuracy = totalQuestions ? (score / totalQuestions) * 100 : 0;
 
-    res.json({
+    // weak subtopics
+    const weakSubTopics = [];
+    const strongSubTopics = [];
+
+    subTopicMap.forEach((v, key) => {
+      const acc = (v.correct / v.total) * 100;
+
+      if (acc < 60) weakSubTopics.push({ subTopic: key, accuracy: acc });
+      else strongSubTopics.push({ subTopic: key, accuracy: acc });
+    });
+
+    return res.json({
       success: true,
-      message: "Quiz submitted successfully",
       data: {
         score,
         totalQuestions,
         accuracy,
         topicsCovered: [...topicsSet],
+        weakSubTopics,
+        strongSubTopics,
       },
     });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
   }
 };

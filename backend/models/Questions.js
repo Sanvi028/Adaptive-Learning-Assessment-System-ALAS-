@@ -2,6 +2,12 @@ const mongoose = require("mongoose");
 
 const questionSchema = new mongoose.Schema(
   {
+    type: {
+      type: String,
+      enum: ["mcq", "subjective"],
+      required: true,
+    },
+
     questionText: {
       type: String,
       required: true,
@@ -10,47 +16,37 @@ const questionSchema = new mongoose.Schema(
 
     options: {
       type: [String],
-      required: true,
-      validate: {
-        validator: function (arr) {
-          return arr.length === 4;
-        },
-        message: "Exactly 4 options are required",
-      },
+      default: undefined, // only for MCQ
     },
 
     correctAnswer: {
-      type: String,
-      required: true,
+      type: String, // MCQ only OR reference answer
+    },
+
+    expectedKeywords: {
+      type: [String], // subjective evaluation (MVP)
+      default: [],
     },
 
     topic: {
       type: String,
       required: true,
-      index: true, // IMPORTANT for adaptive filtering
+      index: true,
+    },
+
+    subTopic: {
+      type: String,
+      required: true, // 🔥 IMPORTANT ADDITION
+      index: true,
     },
 
     difficulty: {
       type: String,
       enum: ["easy", "medium", "hard"],
-      default: "medium",
-      index: true,
-    },
-
-    tags: {
-      type: [String],
-      default: [],
-    },
-
-    timesAttempted: {
-      type: Number,
-      default: 0,
+      default: "easy",
     },
   },
   { timestamps: true }
 );
-
-// Compound index for fast adaptive queries
-questionSchema.index({ topic: 1, difficulty: 1 });
 
 module.exports = mongoose.model("Question", questionSchema);

@@ -11,6 +11,7 @@ const quizAttemptRoutes = require("./routes/quizAttemptRoutes");
 const analyticsRoutes = require("./routes/analyticsRoutes");
 const recommendationRoutes = require("./routes/recommendationRoutes");
 const aiTutorRoutes = require("./routes/aiTutorRoutes");
+const resourceRoutes = require("./routes/resourceRoutes");
 
 
 app.use(cors());
@@ -24,15 +25,7 @@ app.use("/api/quiz", quizAttemptRoutes);
 app.use("/api/analytics", analyticsRoutes); 
 app.use("/api/ai-tutor", aiTutorRoutes);
 app.use("/api/recommendations",recommendationRoutes);
-
-// console.log("authRoutes =", authRoutes);
-// console.log("userProfileRoutes =", userProfileRoutes);
-// console.log("studySessionRoutes =", studySessionRoutes);
-// console.log("questionRoutes =", questionRoutes);
-// console.log("quizAttemptRoutes =", quizAttemptRoutes);
-// console.log("analyticsRoutes =", analyticsRoutes);
-// console.log("aiTutorRoutes =", aiTutorRoutes);
-// console.log("recommendationRoutes =", recommendationRoutes);
+app.use("/api/resources", resourceRoutes);
 
 
 

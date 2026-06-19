@@ -1,43 +1,54 @@
 const axios = require("axios");
 
-async function generateExplanation({ question, correctAnswer, userAnswer, language = "en" }) {
+const generateExplanation = async ({
+  question,
+  correctAnswer,
+  userAnswer,
+}) => {
   try {
     const prompt = `
-You are an expert tutor.
-
-Language: ${language}
+You are an expert AI tutor.
 
 Question: ${question}
 Correct Answer: ${correctAnswer}
 User Answer: ${userAnswer}
 
-Task:
-1. Explain why user answer is wrong (if wrong)
-2. Give step-by-step reasoning
-3. Be simple and educational
-4. Keep response short and clear
-5. Respond in ${language}
-
-Return only explanation text.
+TASK:
+1. Explain why user's answer is wrong (if wrong)
+2. Give correct reasoning step-by-step
+3. Use simple real-life analogy
+4. Be short, clear, and educational
+5. Be encouraging, not harsh
 `;
 
     const response = await axios.post(
-      `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      "https://api.groq.com/openai/v1/chat/completions",
       {
-        contents: [
+        model: "llama-3.3-70b-versatile",
+        messages: [
+          {
+            role: "system",
+            content: "You are a strict but friendly AI tutor.",
+          },
           {
             role: "user",
-            parts: [{ text: prompt }]
-          }
-        ]
+            content: prompt,
+          },
+        ],
+        temperature: 0.6,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+          "Content-Type": "application/json",
+        },
       }
     );
 
-    return response.data.candidates[0].content.parts[0].text;
-
+    return response.data.choices[0].message.content;
   } catch (error) {
     return `Correct answer is ${correctAnswer}. Review the concept again.`;
   }
-}
+};
 
 module.exports = { generateExplanation };

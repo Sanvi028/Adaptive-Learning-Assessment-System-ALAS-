@@ -31,7 +31,7 @@ const analyzePerformance = (performanceData) => {
 };
 
 /* -----------------------------
-   LEARNING TREND
+   LEARNING TREND ANALYSIS
 ------------------------------*/
 const analyzeLearningTrend = (performanceData) => {
   if (!performanceData || performanceData.length === 0) {
@@ -53,7 +53,7 @@ const analyzeLearningTrend = (performanceData) => {
 };
 
 /* -----------------------------
-   PROMPT ENGINE
+   PROMPT ENGINE (FINAL ALAS VERSION)
 ------------------------------*/
 const buildAdaptivePrompt = ({
   weakTopics,
@@ -62,36 +62,62 @@ const buildAdaptivePrompt = ({
   userQuestion,
 }) => {
   return `
-You are an expert AI Tutor in an Adaptive Learning System (ALAS).
+You are an Expert AI Tutor in an Adaptive Learning System (ALAS).
+
+You are NOT just an explainer — you are a PERSONALIZED TEACHER.
+
+---
 
 STUDENT PROFILE:
 
 Weak Topics:
 ${
     weakTopics.length
-      ? weakTopics.map((t) => `- ${t.topic} (${t.accuracy}%)`).join("\n")
+      ? weakTopics.map(t => `- ${t.topic} (${t.accuracy}%)`).join("\n")
       : "None"
   }
 
 Strong Topics:
 ${
     strongTopics.length
-      ? strongTopics.map((t) => `- ${t.topic} (${t.accuracy}%)`).join("\n")
+      ? strongTopics.map(t => `- ${t.topic}`).join("\n")
       : "None"
   }
 
 Learning Trend: ${trend}
 
-QUESTION:
+---
+
+USER QUESTION:
 ${userQuestion}
 
-RULES:
-- Weak topic → simple explanation
-- Strong topic → deeper explanation
-- Declining → simplify
-- Improving → increase difficulty slightly
+---
 
-Return structured explanation with examples.
+TEACHING INSTRUCTIONS:
+
+1. Explain the concept in SIMPLE language
+2. Use REAL-LIFE examples (daily life analogies)
+3. Identify common mistakes students make
+4. Focus more on weak topics
+
+---
+
+5. IMPORTANT (PERSONALIZED PRACTICE):
+Generate 3 QUESTIONS:
+
+- 1 EASY question
+- 1 MEDIUM question
+- 1 HARD/interview-level question
+
+All questions MUST be based on weak topics only.
+
+---
+
+6. STYLE:
+- Structured output
+- Clear headings
+- Beginner-friendly
+- Encouraging tone if user is weak
 `;
 };
 
@@ -104,8 +130,14 @@ const callGroqAPI = async (prompt) => {
     {
       model: "llama-3.3-70b-versatile",
       messages: [
-        { role: "system", content: "You are an expert AI tutor." },
-        { role: "user", content: prompt },
+        {
+          role: "system",
+          content: "You are an expert adaptive AI tutor for students.",
+        },
+        {
+          role: "user",
+          content: prompt,
+        },
       ],
       temperature: 0.7,
     },
@@ -121,7 +153,7 @@ const callGroqAPI = async (prompt) => {
 };
 
 /* -----------------------------
-   MAIN FUNCTION
+   MAIN SERVICE FUNCTION
 ------------------------------*/
 const generateTutorResponse = async (userId, userQuestion) => {
   try {
@@ -132,7 +164,7 @@ const generateTutorResponse = async (userId, userQuestion) => {
         weakTopics: [],
         strongTopics: [],
         trend: "no-data",
-        answer: "No data found. Attempt quizzes first.",
+        answer: "No data found. Please attempt quizzes first.",
       };
     }
 

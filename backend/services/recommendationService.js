@@ -1,80 +1,73 @@
 const Question = require("../models/Questions");
-const UserPerformance = require("../models/UserPerformance");
+const QuizAttempt = require("../models/QuizAttempt");
 
-/**
- * 1. Get user weak/strong topics
- */
-const getUserProfile = async (userId) => {
-  const data = await UserPerformance.find({ userId });
+const generateRecommendations = async (userId) => {
+  const attempts = await QuizAttempt.find({ userId });
+
+  if (!attempts.length) {
+    return {
+      weakTopics: [],
+      recommendations: {
+        reinforce: [],
+        practice: [],
+        challenge: [],
+      },
+    };
+  }
+
+  const topicMap = new Map();
+
+  for (const attempt of attempts) {
+    const key = attempt.topic || "general";
+
+    if (!topicMap.has(key)) {
+      topicMap.set(key, {
+        correct: 0,
+        total: 0,
+      });
+    }
+
+    const data = topicMap.get(key);
+
+    data.total += 1;
+
+    if (attempt.isCorrect) {
+      data.correct += 1;
+    }
+  }
 
   const weakTopics = [];
-  const strongTopics = [];
 
-  data.forEach((item) => {
-    const accuracy = item.accuracy || 0;
+  topicMap.forEach((value, topic) => {
+    const accuracy = (value.correct / value.total) * 100;
 
     if (accuracy < 60) {
-      weakTopics.push(item.topic);
-    } else if (accuracy >= 85) {
-      strongTopics.push(item.topic);
+      weakTopics.push(topic);
     }
   });
 
-  return { weakTopics, strongTopics };
-};
+  const reinforce = await Question.find({
+    topic: { $in: weakTopics },
+    difficulty: "easy",
+  }).limit(10);
 
-/**
- * 2. Fetch questions based on difficulty
- */
-const getQuestionsByTopics = async (topics, difficulty, limit = 5) => {
-  return await Question.find({
-    topic: { $in: topics },
-    difficulty,
-  }).limit(limit);
-};
+  const practice = await Question.find({
+    topic: { $in: weakTopics },
+    difficulty: "medium",
+  }).limit(10);
 
-/**
- * 3. MAIN RECOMMENDATION ENGINE
- */
-const generateRecommendations = async (userId) => {
-  const { weakTopics, strongTopics } = await getUserProfile(userId);
-
-  // Weak → EASY questions
-  const weakEasyQuestions = await getQuestionsByTopics(
-    weakTopics,
-    "easy",
-    5
-  );
-
-  // Weak → MEDIUM reinforcement
-  const weakMediumQuestions = await getQuestionsByTopics(
-    weakTopics,
-    "medium",
-    5
-  );
-
-  // Strong → HARD challenge
-  const strongHardQuestions = await getQuestionsByTopics(
-    strongTopics,
-    "hard",
-    5
-  );
+  const challenge = await Question.find({
+    topic: { $in: weakTopics },
+    difficulty: "hard",
+  }).limit(5);
 
   return {
     weakTopics,
-    strongTopics,
-
     recommendations: {
-      reinforce: weakEasyQuestions,
-      practice: weakMediumQuestions,
-      challenge: strongHardQuestions,
+      reinforce,
+      practice,
+      challenge,
     },
-
-    roadmap: [
-      "Start with weak topics (easy questions)",
-      "Move to medium difficulty practice",
-      "Attempt hard questions for strong topics",
-    ],
   };
 };
 
