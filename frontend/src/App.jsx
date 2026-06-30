@@ -1,7 +1,9 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+
 import MainLayout from "./layout/MainLayout";
 
 import LandingPage from "./pages/LandingPage";
+import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import AiTutor from "./pages/AiTutor";
 import Quiz from "./pages/Quiz";
@@ -21,15 +23,35 @@ export default function App() {
     <BrowserRouter>
       <div className="page-shell">
         <Routes>
-
+          {/* Public Routes */}
           <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<Login />} />
 
-          <Route path="/dashboard" element={<LayoutWrapper Component={Dashboard} />} />
-          <Route path="/ai-tutor" element={<LayoutWrapper Component={AiTutor} />} />
-          <Route path="/quiz" element={<LayoutWrapper Component={Quiz} />} />
-          <Route path="/analytics" element={<LayoutWrapper Component={Analytics} />} />
-          <Route path="/resources" element={<LayoutWrapper Component={Resources} />} />
+          {/* Protected App Pages */}
+          <Route
+            path="/dashboard"
+            element={<LayoutWrapper Component={Dashboard} />}
+          />
 
+          <Route
+            path="/ai-tutor"
+            element={<LayoutWrapper Component={AiTutor} />}
+          />
+
+          <Route
+            path="/quiz"
+            element={<LayoutWrapper Component={Quiz} />}
+          />
+
+          <Route
+            path="/analytics"
+            element={<LayoutWrapper Component={Analytics} />}
+          />
+
+          <Route
+            path="/resources"
+            element={<LayoutWrapper Component={Resources} />}
+          />
         </Routes>
       </div>
     </BrowserRouter>

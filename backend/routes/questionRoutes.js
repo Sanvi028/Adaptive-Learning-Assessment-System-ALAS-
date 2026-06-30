@@ -38,8 +38,7 @@ router.post("/", async (req, res) => {
   }
 });
 
-
-// ✅ ADD THIS: GET ALL QUESTIONS
+// GET ALL QUESTIONS
 router.get("/", async (req, res) => {
   try {
     const questions = await Question.find();

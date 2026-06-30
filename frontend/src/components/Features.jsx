@@ -1,63 +1,74 @@
+import {
+  BookOpen,
+  Brain,
+  BarChart3,
+  Sparkles,
+} from "lucide-react";
+
+const features = [
+  {
+    icon: <Brain size={32} />,
+    title: "AI Tutor",
+    description:
+      "Get instant explanations and personalized guidance powered by AI.",
+  },
+  {
+    icon: <BookOpen size={32} />,
+    title: "Smart Quizzes",
+    description:
+      "Practice adaptive quizzes that match your current knowledge level.",
+  },
+  {
+    icon: <BarChart3 size={32} />,
+    title: "Performance Analytics",
+    description:
+      "Track your progress with detailed insights and visual reports.",
+  },
+  {
+    icon: <Sparkles size={32} />,
+    title: "Resource Recommendations",
+    description:
+      "Receive personalized study resources based on your performance.",
+  },
+];
+
 function Features() {
-  const features = [
-    {
-      title: "AI Tutor",
-      description:
-        "Get personalized explanations and instant doubt solving powered by AI.",
-      icon: "🤖",
-    },
-    {
-      title: "Adaptive Quizzes",
-      description:
-        "Questions automatically adjust to your learning level.",
-      icon: "📝",
-    },
-    {
-      title: "Analytics",
-      description:
-        "Track strengths, weaknesses, and monitor learning progress.",
-      icon: "📊",
-    },
-    {
-      title: "Smart Resources",
-      description:
-        "Receive AI-recommended study materials based on your performance.",
-      icon: "📚",
-    },
-  ];
-
   return (
-    <section className="bg-white py-24">
-      <div className="mx-auto max-w-7xl px-6">
-        <div className="text-center">
-          <h2 className="text-4xl font-bold text-text">
-            Everything You Need to Learn Better
-          </h2>
+    <section className="max-w-7xl mx-auto px-6 py-20">
 
-          <p className="mt-4 text-gray-600">
-            One platform combining AI tutoring, quizzes, analytics,
-            and personalized recommendations.
-          </p>
-        </div>
+      <div className="text-center mb-16">
+        <h2 className="text-4xl font-bold text-text">
+          Everything You Need to Study Smarter
+        </h2>
 
-        <div className="mt-16 grid gap-8 md:grid-cols-2 lg:grid-cols-4">
-          {features.map((feature) => (
-            <div
-              key={feature.title}
-              className="glass-panel rounded-2xl p-8 transition hover:-translate-y-2"
-            >
-              <div className="mb-5 text-5xl">{feature.icon}</div>
+        <p className="mt-4 text-gray-600 max-w-2xl mx-auto">
+          Our AI-powered platform combines personalized learning,
+          intelligent tutoring, adaptive quizzes, and analytics to
+          help you succeed.
+        </p>
+      </div>
 
-              <h3 className="mb-3 text-xl font-semibold">
-                {feature.title}
-              </h3>
+      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
 
-              <p className="text-gray-600">
-                {feature.description}
-              </p>
+        {features.map((feature, index) => (
+          <div
+            key={index}
+            className="glass-panel rounded-3xl p-8 hover:-translate-y-2 transition duration-300"
+          >
+            <div className="text-primary mb-5">
+              {feature.icon}
             </div>
-          ))}
-        </div>
+
+            <h3 className="text-xl font-semibold mb-3">
+              {feature.title}
+            </h3>
+
+            <p className="text-gray-600">
+              {feature.description}
+            </p>
+          </div>
+        ))}
+
       </div>
     </section>
   );

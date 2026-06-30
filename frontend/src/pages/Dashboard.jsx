@@ -1,13 +1,11 @@
-import WelcomeCard from "../components/dashboard/WelcomeCard";
+import DashboardGrid from "../components/dashboard/DashboardGrid";
 
-const Dashboard = () => {
+function Dashboard() {
   return (
-    <div className="page-shell min-h-screen p-6">
-      <div className="mx-auto max-w-7xl">
-        <WelcomeCard />
-      </div>
+    <div className="p-8">
+      <DashboardGrid />
     </div>
   );
-};
+}
 
 export default Dashboard;

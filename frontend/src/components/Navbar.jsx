@@ -59,6 +59,23 @@ function Navbar() {
 
       </div>
 
+      {/* Authentication Buttons */}
+      <div className="flex items-center gap-4">
+        <Link
+          to="/login"
+          className="px-5 py-2 rounded-lg border border-primary text-primary hover:bg-primary hover:text-white transition"
+        >
+          Login
+        </Link>
+
+        <Link
+          to="/register"
+          className="px-5 py-2 rounded-lg bg-primary text-white hover:opacity-90 transition"
+        >
+          Register
+        </Link>
+      </div>
+
     </nav>
   );
 }

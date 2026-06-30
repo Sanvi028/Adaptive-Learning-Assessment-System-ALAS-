@@ -1,65 +1,29 @@
-const WelcomeCard = () => {
-  // Temporary dummy data
-  const user = {
-    name: "Rahul",
-    streak: 7,
-    goal: "Complete 2 quizzes",
-  };
-
-  const hour = new Date().getHours();
-
-  let greeting = "Hello";
-
-  if (hour < 12) {
-    greeting = "Good Morning";
-  } else if (hour < 18) {
-    greeting = "Good Afternoon";
-  } else {
-    greeting = "Good Evening";
-  }
-
+function WelcomeCard() {
   return (
-    <div className="glass-panel animate-rise rounded-3xl p-8">
-      <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-        <div>
-          <p className="text-sm font-medium text-gray-500">
-            {greeting} 👋
-          </p>
+    <div className="glass-panel rounded-3xl p-8 animate-rise">
 
-          <h1 className="mt-2 text-4xl font-bold text-text">
-            {user.name}
-          </h1>
+      <h1 className="text-4xl font-bold text-text">
+        Welcome Back 👋
+      </h1>
 
-          <p className="mt-3 max-w-xl text-gray-600">
-            Welcome back to your Adaptive Study System.
-            Stay consistent, keep learning, and improve every day.
-          </p>
-        </div>
+      <p className="mt-3 text-gray-600">
+        Continue your learning journey with AI-powered study tools.
+      </p>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="rounded-2xl bg-white/70 p-5 shadow">
-            <p className="text-sm text-gray-500">
-              🔥 Study Streak
-            </p>
+      <div className="mt-8 flex flex-wrap gap-4">
 
-            <h2 className="mt-2 text-3xl font-bold text-primary">
-              {user.streak} Days
-            </h2>
-          </div>
+        <button className="bg-primary text-white px-6 py-3 rounded-xl hover:scale-105 transition">
+          Start Quiz
+        </button>
 
-          <div className="rounded-2xl bg-white/70 p-5 shadow">
-            <p className="text-sm text-gray-500">
-              🎯 Today's Goal
-            </p>
+        <button className="border border-primary text-primary px-6 py-3 rounded-xl hover:bg-primary hover:text-white transition">
+          Ask AI Tutor
+        </button>
 
-            <h2 className="mt-2 text-lg font-semibold text-text">
-              {user.goal}
-            </h2>
-          </div>
-        </div>
       </div>
+
     </div>
   );
-};
+}
 
 export default WelcomeCard;
